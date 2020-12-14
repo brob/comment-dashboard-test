@@ -9,13 +9,24 @@ export default function CommentList({ approvalStatus }) {
 
     const [commentToolData, setCommentTool] = useState([])
     const [reloadData, setReloadData] = useState(false)
+    
     useEffect(() => {
-        client.fetch((`*[_type == "comment"]{
-            ...,
-            post->{
-                title
-            }
-         }`)).then(data =>  setCommentTool(data)) 
+        console.log(`Loading ${approvalStatus} comments`)
+        if (approvalStatus === undefined) {
+            client.fetch((`*[_type == "comment" && !defined(approved)]{
+                ...,
+                post->{
+                    title
+                }
+             }[0...5]`)).then(data =>  setCommentTool(data)) 
+        } else {
+            client.fetch((`*[_type == "comment" && approved == ${approvalStatus}]{
+                ...,
+                post->{
+                    title
+                }
+            }[0...5]`)).then(data =>  setCommentTool(data)) 
+        }
     }, [reloadData, state.resetData])
     
     function updateApproval(documentId) { 
