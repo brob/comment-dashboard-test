@@ -1,17 +1,42 @@
-import React, {useEffect, useState} from 'react'
+import React, {useEffect, useState, useReducer} from 'react'
 import CommentList from './CommentList'
 
 import {Stack, Container, Inline, Box, Card, Text, Button, Flex, Grid, Heading, Spinner, Label, Switch} from '@sanity/ui'
 
-import client from 'part:@sanity/base/client'
-import schema from 'part:@sanity/base/schema'
-import Preview from 'part:@sanity/base/preview'
-
 
 import styles from './CommentTool.css'
 
+
+
+
+export const AppContext = React.createContext();
+
+const initialState = {
+
+  resetData: ""
+    
+
+};
+
+function reducer(state, action) {
+    switch (action.type) {
+        case 'UPDATE_DATA':
+            console.log('action data', action.data)
+            return {
+                resetData: action.data
+            };
+
+
+        default:
+            return initialState;
+    }
+}
+
+
+
 export default function CommentTool() {
 
+  const [state, dispatch] = useReducer(reducer, initialState);
 
 
   // getDocInState = documentId => {
@@ -35,7 +60,8 @@ export default function CommentTool() {
           <p>This is a blank slate for you to build on.</p>
           <p>Tools are just React components!</p>
         </Card>
-        
+        <AppContext.Provider value={{ state, dispatch }}>
+
         <Grid autoCols={"auto"} columns={[1, 1, 1, 2]}>
 
           <Card column={'full'} margin={3} className={styles.container}>
@@ -63,6 +89,8 @@ export default function CommentTool() {
 
           </Card>
         </Grid>
+        </AppContext.Provider>
+
       </Container>
     )
 }

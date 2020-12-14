@@ -1,31 +1,34 @@
-import React, {useEffect, useState} from 'react'
-
+import React, {useEffect, useState, useContext} from 'react'
+import { AppContext } from './CommentTool'
 import {Stack, Box, Card, Text, Flex, Grid, Spinner, Label, Switch} from '@sanity/ui'
 
 import client from 'part:@sanity/base/client'
 
 export default function CommentList({ approvalStatus }) {
+    const {state, dispatch} = useContext(AppContext);
+
     const [commentToolData, setCommentTool] = useState([])
     const [reloadData, setReloadData] = useState(false)
     useEffect(() => {
-        console.log('eep')
         client.fetch((`*[_type == "comment"]{
             ...,
             post->{
                 title
             }
          }`)).then(data =>  setCommentTool(data)) 
-    }, [reloadData])
+    }, [reloadData, state.resetData])
     
     function updateApproval(documentId) { 
         const status = commentToolData.filter(doc => documentId === doc._id)[0].approved
         let newStatus = (status === undefined) ? true : !status
-        console.log({status}, {newStatus})
+
         return client.patch(documentId)
                 .set({"approved": newStatus})
                 .commit()
                 .then(result => {
+                    dispatch({ type: 'UPDATE_DATA', data: !approvalStatus})
                     setReloadData(oldState => !oldState)
+                    state.resetData == approvalStatus
                     return result
                 })
                 .catch(err => {
