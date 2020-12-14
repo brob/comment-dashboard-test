@@ -37,8 +37,7 @@ export default function CommentList({ approvalStatus }) {
                 .set({"approved": newStatus})
                 .commit()
                 .then(result => {
-                    dispatch({ type: 'UPDATE_DATA', data: !approvalStatus})
-                    state.resetData == approvalStatus
+                    dispatch({ type: 'UPDATE_DATA', data: `${!approvalStatus}`})
                     return result
                 })
                 .catch(err => {
