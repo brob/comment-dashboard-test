@@ -1,43 +1,23 @@
-import React, {useEffect, useState, useContext} from 'react'
-import { AppContext } from './CommentTool'
+import React from 'react'
 import {Stack, Box, Card, Text, Flex, Grid, Spinner, Label, Switch} from '@sanity/ui'
+import QueryContainer from 'part:@sanity/base/query-container'
 
 import client from 'part:@sanity/base/client'
 
 export default function CommentList({ approvalStatus }) {
-    const {state, dispatch} = useContext(AppContext);
-
-    const [commentToolData, setCommentTool] = useState([])
-    const [reloadData, setReloadData] = useState(false)
-    
-    useEffect(() => {
-        console.log(`Loading ${approvalStatus} comments`)
-        if (approvalStatus === undefined) {
-            client.fetch((`*[_type == "comment" && !defined(approved)]{
-                ...,
-                post->{
-                    title
-                }
-             }[0...5]`)).then(data =>  setCommentTool(data)) 
-        } else {
-            client.fetch((`*[_type == "comment" && approved == ${approvalStatus}]{
-                ...,
-                post->{
-                    title
-                }
-            }[0...5]`)).then(data =>  setCommentTool(data)) 
+    const query = `*[_type == "comment" && ${(approvalStatus == undefined) ? `!defined(approved)` : `approved == ${approvalStatus}`}]`
+    const projection = `{
+        ...,
+        post->{
+            title
         }
-    }, [reloadData, state.resetData])
-    
-    function updateApproval(documentId) { 
-        const status = commentToolData.filter(doc => documentId === doc._id)[0].approved
-        let newStatus = (status === undefined) ? true : !status
+     }[0...5]`
 
+    function updateApproval(documentId) { 
         return client.patch(documentId)
                 .set({"approved": newStatus})
                 .commit()
                 .then(result => {
-                    dispatch({ type: 'UPDATE_DATA', data: `${!approvalStatus}`})
                     return result
                 })
                 .catch(err => {
@@ -49,16 +29,38 @@ export default function CommentList({ approvalStatus }) {
         return await updateApproval(event.target.name)
     }
     
-
-    if (!commentToolData || commentToolData.length === 0) return <Spinner />
-    
-    const filteredDocs = commentToolData.filter(doc => {
-      return doc.approved === approvalStatus
-    })
-
     return(
-      <Stack as={'ul'}>
-        {filteredDocs.map(doc => (
+<QueryContainer query={`${query}${projection}`}>
+    {({result, loading, error, onRetry}) => {
+      if (error) {
+        return (
+          <Snackbar
+            kind='error'
+            isPersisted
+            actionTitle='Retry'
+            onAction={onRetry}
+            title='An error occurred while loading items:'
+            subtitle={<div>{error.message}</div>}
+          />
+        )
+      }
+
+      if (loading) {
+        return (
+          <div>
+            {loading && <Spinner center message='Loading items…' />}
+          </div>
+        )
+      }
+
+      if (!result) {
+        return null
+      }
+ 
+      const documents = result?.documents
+      return (
+        <Stack as={'ul'}>
+        {documents.map(doc => (
           <Card key={doc._id} borderBottom as={'li'} padding={4}>
             <Grid columns={5} justify={'space-between'} align={'center'}>
               <Box column={4}>
@@ -82,6 +84,9 @@ export default function CommentList({ approvalStatus }) {
           </Card>
         ))}
       </Stack>
+      )
+    }}
+  </QueryContainer>
     )
   }
   
