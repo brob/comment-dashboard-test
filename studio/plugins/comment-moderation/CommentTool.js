@@ -1,13 +1,8 @@
-import React, {useEffect, useState, useReducer} from 'react'
+import React, { useReducer } from 'react'
 import CommentList from './CommentList'
 
-import {Stack, Container, Inline, Box, Card, Text, Button, Flex, Grid, Heading, Spinner, Label, Switch} from '@sanity/ui'
-
-
+import { Container, Card, Grid, Heading } from '@sanity/ui'
 import styles from './CommentTool.css'
-
-
-
 
 export const AppContext = React.createContext();
 
@@ -35,21 +30,6 @@ export default function CommentTool() {
 
   const [state, dispatch] = useReducer(reducer, initialState);
 
-
-  // getDocInState = documentId => {
-  //   // console.log(documentId)
-  //   // return this.state.documents.filter(doc => doc._id === documentId)
-  // }
-  // updateApproved = (documentId, approved) => {
-  //   // console.log(this.getDocInState(documentId))
-  //   // console.log(approved)
-  //   // this.getDocInState(documentId)[0].approved = approved
-  //   // return this.getDocInState(documentId)[0]
-  // }
-
-
-
-  
     return (
       <Container width={3}>
         <Card margin={3} padding={5} className={styles.container}>
