@@ -5,6 +5,7 @@ import QueryContainer from 'part:@sanity/base/query-container'
 import client from 'part:@sanity/base/client'
 
 export default function CommentList({ approvalStatus }) {
+
     const query = `*[_type == "comment" && ${(approvalStatus == undefined) ? `!defined(approved)` : `approved == ${approvalStatus}`}]`
     const projection = `{
         ...,
@@ -13,7 +14,7 @@ export default function CommentList({ approvalStatus }) {
         }
      }[0...5]`
 
-    function updateApproval(documentId) { 
+    function updateApproval(documentId, newStatus) {
         return client.patch(documentId)
                 .set({"approved": newStatus})
                 .commit()
@@ -25,10 +26,13 @@ export default function CommentList({ approvalStatus }) {
                 })
     }
 
-    async function handleToggle(event) {
-        return await updateApproval(event.target.name)
+    async function handleToggle(id, approved) {
+        return await updateApproval(id, !approved)
     }
     
+
+    
+
     return(
 <QueryContainer query={`${query}${projection}`}>
     {({result, loading, error, onRetry}) => {
@@ -74,7 +78,7 @@ export default function CommentList({ approvalStatus }) {
                   <Label>Approved?</Label>
                   <Switch 
                     name={doc._id}
-                    onChange={handleToggle}
+                    onChange={() => handleToggle(doc._id, doc.approved)}
                     checked={doc.approved} 
                     indeterminate={(doc.approved === undefined) ? true : false} 
                   />
