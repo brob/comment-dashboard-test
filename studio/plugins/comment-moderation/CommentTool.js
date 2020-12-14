@@ -12,10 +12,7 @@ import styles from './CommentTool.css'
 export const AppContext = React.createContext();
 
 const initialState = {
-
   resetData: ""
-    
-
 };
 
 function reducer(state, action) {

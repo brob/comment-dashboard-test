@@ -27,7 +27,6 @@ export default function CommentList({ approvalStatus }) {
                 .commit()
                 .then(result => {
                     dispatch({ type: 'UPDATE_DATA', data: !approvalStatus})
-                    setReloadData(oldState => !oldState)
                     state.resetData == approvalStatus
                     return result
                 })
